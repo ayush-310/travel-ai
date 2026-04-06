@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import TripCard from "./TripCard";
 
 const Home = () => {
     const [trips, setTrips] = useState([]);
@@ -15,7 +16,7 @@ const Home = () => {
 
             {/* Header */}
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold">My Trips</h1>
+                <h1 className="text-2xl bg- font-bold">My Trips</h1>
 
                 <button
                     onClick={() => navigate("/create")}
@@ -31,17 +32,11 @@ const Home = () => {
             ) : (
                 <div className="grid gap-4">
                     {trips.map((trip) => (
-                        <div
+                        <TripCard
                             key={trip.id}
+                            trip={trip}
                             onClick={() => navigate(`/trip/${trip.id}`)}
-                            className="p-4 border rounded shadow cursor-pointer hover:bg-gray-50"
-                        >
-                            <h2 className="text-xl font-semibold">{trip.title}</h2>
-                            <p className="text-gray-600">{trip.destination}</p>
-                            <p className="text-sm text-gray-500">
-                                {trip.startDate} → {trip.endDate}
-                            </p>
-                        </div>
+                        />
                     ))}
                 </div>
             )}

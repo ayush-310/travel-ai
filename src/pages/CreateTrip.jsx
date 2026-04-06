@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-
 const CreateTrip = () => {
     const navigate = useNavigate();
 
@@ -24,19 +23,24 @@ const CreateTrip = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
 
+        if (!formData.title || !formData.destination) {
+            alert("Please fill all required fields");
+            return;
+        }
+
         const newTrip = {
-            id: Date.now().toString(), // simple unique ID
-            ...formData,
+            id: Date.now().toString(),
+            title: formData.title.trim(),
+            destination: formData.destination.trim(),
+            startDate: formData.startDate,
+            endDate: formData.endDate,
             places: [],
         };
 
-        // Get existing trips
         const existingTrips = JSON.parse(localStorage.getItem("trips")) || [];
 
-        // Add new trip
         const updatedTrips = [...existingTrips, newTrip];
 
-        // Save back
         localStorage.setItem("trips", JSON.stringify(updatedTrips));
 
         setFormData({
@@ -46,7 +50,6 @@ const CreateTrip = () => {
             endDate: "",
         });
 
-        // Redirect to home
         navigate("/");
     };
 
@@ -55,7 +58,6 @@ const CreateTrip = () => {
             <h1 className="text-2xl font-bold mb-4">Create a Trip</h1>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-
                 <input
                     type="text"
                     name="title"
@@ -90,14 +92,15 @@ const CreateTrip = () => {
                     className="w-full p-2 border rounded"
                 />
 
-                <button className="bg-blue-500 text-white px-4 py-2 rounded">
+                <button
+                    disabled={!formData.title || !formData.destination}
+                    className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
+                >
                     Create Trip
                 </button>
-
             </form>
         </div>
-    )
-}
+    );
+};
 
-
-export default CreateTrip
+export default CreateTrip;
