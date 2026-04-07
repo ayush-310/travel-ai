@@ -1,57 +1,14 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { useLocation } from "react-router-dom";
+import React from "react";
+import { useNavigate, useLocation, Link } from "react-router-dom";
+import { useCreateTrip } from "../hooks/useCreateTrip";
 
 const CreateTrip = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    const [formData, setFormData] = useState({
-        title: "",
-        destination: "",
-        startDate: "",
-        endDate: "",
-    });
+    const { formData, handleChange, createTrip, saveDraft } =
+        useCreateTrip(location.state);
 
-    // 🔥 Auto-load draft if exists
-    useEffect(() => {
-        const shouldLoadDraft = location.state?.loadDraft;
-
-        if (!shouldLoadDraft) {
-            localStorage.removeItem("tripDraft");
-        }
-
-        if (shouldLoadDraft) {
-            const draft = JSON.parse(localStorage.getItem("tripDraft"));
-            if (draft) {
-                setFormData(draft);
-            }
-        } else {
-            // Fresh form
-            setFormData({
-                title: "",
-                destination: "",
-                startDate: "",
-                endDate: "",
-            });
-        }
-    }, [location.state]);
-
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-
-        const updatedData = {
-            ...formData,
-            [name]: value,
-        };
-
-        setFormData(updatedData);
-
-        // 🔥 Auto-save draft while typing
-        localStorage.setItem("tripDraft", JSON.stringify(updatedData));
-    };
-
-    // ✅ FINAL SUBMIT
     const handleSubmit = (e) => {
         e.preventDefault();
 
@@ -60,41 +17,17 @@ const CreateTrip = () => {
             return;
         }
 
-        const newTrip = {
-            id: Date.now().toString(),
-            ...formData,
-            places: [],
-            status: "completed",
-        };
-
-        const existingTrips = JSON.parse(localStorage.getItem("trips")) || [];
-
-        localStorage.setItem(
-            "trips",
-            JSON.stringify([...existingTrips, newTrip])
-        );
-
-        // 🔥 Remove draft after submit
-        localStorage.removeItem("tripDraft");
-
-        setFormData({
-            title: "",
-            destination: "",
-            startDate: "",
-            endDate: "",
-        });
-
+        createTrip();
         navigate("/");
     };
 
-    // ✅ SAVE FOR LATER (MANUAL BUTTON)
     const handleSaveDraft = () => {
-        if (!formData.title.trim()) {
-            alert("Title is required to save draft");
+        const res = saveDraft();
+
+        if (!res.success) {
+            alert(res.message);
             return;
         }
-
-        localStorage.setItem("tripDraft", JSON.stringify(formData));
 
         alert("Saved for later!");
         navigate("/");
@@ -140,9 +73,7 @@ const CreateTrip = () => {
                     className="w-full p-2 border rounded"
                 />
 
-                {/* Buttons */}
                 <div className="flex gap-3">
-
                     <button
                         disabled={!formData.title || !formData.destination}
                         className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
@@ -161,7 +92,6 @@ const CreateTrip = () => {
                     <Link to="/" className="text-blue-500 hover:underline">
                         Cancel
                     </Link>
-
                 </div>
             </form>
         </div>
