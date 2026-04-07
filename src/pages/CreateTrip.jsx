@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 const CreateTrip = () => {
     const navigate = useNavigate();
+    const location = useLocation();
 
     const [formData, setFormData] = useState({
         title: "",
@@ -13,11 +15,27 @@ const CreateTrip = () => {
 
     // 🔥 Auto-load draft if exists
     useEffect(() => {
-        const draft = JSON.parse(localStorage.getItem("tripDraft"));
-        if (draft) {
-            setFormData(draft);
+        const shouldLoadDraft = location.state?.loadDraft;
+
+        if (!shouldLoadDraft) {
+            localStorage.removeItem("tripDraft");
         }
-    }, []);
+
+        if (shouldLoadDraft) {
+            const draft = JSON.parse(localStorage.getItem("tripDraft"));
+            if (draft) {
+                setFormData(draft);
+            }
+        } else {
+            // Fresh form
+            setFormData({
+                title: "",
+                destination: "",
+                startDate: "",
+                endDate: "",
+            });
+        }
+    }, [location.state]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;

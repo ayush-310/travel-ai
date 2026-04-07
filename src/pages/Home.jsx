@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import MapView from "../components/MapView";
-import TripCard from "./TripCard";
+import TripCard from "../components/TripCard";
 
 const Home = () => {
     const [trips, setTrips] = useState([]);
@@ -27,7 +27,7 @@ const Home = () => {
                 <h1 className="text-2xl font-bold">My Trips</h1>
 
                 <button
-                    onClick={() => navigate("/create")}
+                    onClick={() => navigate("/create", { state: { loadDraft: false } })}
                     className="bg-blue-500 text-white px-4 py-2 rounded"
                 >
                     + Create Trip
@@ -50,7 +50,7 @@ const Home = () => {
                     </p>
 
                     <button
-                        onClick={() => navigate("/create")}
+                        onClick={() => navigate("/create", { state: { loadDraft: true } })}
                         className="mt-2 bg-yellow-500 text-white px-3 py-1 rounded"
                     >
                         Continue Editing

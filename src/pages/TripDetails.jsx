@@ -1,9 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import MapView from "../components/MapView";
+import { getCoordinates } from "../services/geocode";
 
 const TripDetails = () => {
+    const [coords, setCoords] = useState({
+        lat: 28.6139,
+        lng: 77.2090,
+    });
     const { id } = useParams();
     const navigate = useNavigate();
+
+
 
     const [trip, setTrip] = useState(null);
     const [newPlace, setNewPlace] = useState("");
@@ -18,6 +26,20 @@ const TripDetails = () => {
 
     useEffect(() => {
         if (trip) setEditData(trip);
+    }, [trip]);
+
+    useEffect(() => {
+        const fetchCoords = async () => {
+            if (trip?.destination) {
+                const result = await getCoordinates(trip.destination);
+
+                if (result) {
+                    setCoords(result);
+                }
+            }
+        };
+
+        fetchCoords();
     }, [trip]);
 
     const handleAddPlace = () => {
@@ -125,6 +147,7 @@ const TripDetails = () => {
                 <>
                     <h1 className="text-2xl font-bold mb-2">{trip.title}</h1>
                     <p className="text-gray-600">{trip.destination}</p>
+                    <MapView lat={coords.lat} lng={coords.lng} />
                     <p className="text-sm text-gray-500 mb-4">
                         {trip.startDate} → {trip.endDate}
                     </p>
