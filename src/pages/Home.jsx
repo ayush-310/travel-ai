@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import MapView from "../components/MapView";
 import TripCard from "./TripCard";
 
 const Home = () => {
@@ -18,6 +19,8 @@ const Home = () => {
 
     return (
         <div className="p-6 max-w-4xl mx-auto">
+
+            <MapView />
 
             {/* Header */}
             <div className="flex justify-between items-center mb-6">
