@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
 
 const CreateTrip = () => {
     const navigate = useNavigate();
@@ -11,15 +11,29 @@ const CreateTrip = () => {
         endDate: "",
     });
 
+    // 🔥 Auto-load draft if exists
+    useEffect(() => {
+        const draft = JSON.parse(localStorage.getItem("tripDraft"));
+        if (draft) {
+            setFormData(draft);
+        }
+    }, []);
+
     const handleChange = (e) => {
         const { name, value } = e.target;
 
-        setFormData({
+        const updatedData = {
             ...formData,
             [name]: value,
-        });
+        };
+
+        setFormData(updatedData);
+
+        // 🔥 Auto-save draft while typing
+        localStorage.setItem("tripDraft", JSON.stringify(updatedData));
     };
 
+    // ✅ FINAL SUBMIT
     const handleSubmit = (e) => {
         e.preventDefault();
 
@@ -30,18 +44,20 @@ const CreateTrip = () => {
 
         const newTrip = {
             id: Date.now().toString(),
-            title: formData.title.trim(),
-            destination: formData.destination.trim(),
-            startDate: formData.startDate,
-            endDate: formData.endDate,
+            ...formData,
             places: [],
+            status: "completed",
         };
 
         const existingTrips = JSON.parse(localStorage.getItem("trips")) || [];
 
-        const updatedTrips = [...existingTrips, newTrip];
+        localStorage.setItem(
+            "trips",
+            JSON.stringify([...existingTrips, newTrip])
+        );
 
-        localStorage.setItem("trips", JSON.stringify(updatedTrips));
+        // 🔥 Remove draft after submit
+        localStorage.removeItem("tripDraft");
 
         setFormData({
             title: "",
@@ -53,15 +69,29 @@ const CreateTrip = () => {
         navigate("/");
     };
 
+    // ✅ SAVE FOR LATER (MANUAL BUTTON)
+    const handleSaveDraft = () => {
+        if (!formData.title.trim()) {
+            alert("Title is required to save draft");
+            return;
+        }
+
+        localStorage.setItem("tripDraft", JSON.stringify(formData));
+
+        alert("Saved for later!");
+        navigate("/");
+    };
+
     return (
         <div className="p-6 max-w-xl mx-auto">
             <h1 className="text-2xl font-bold mb-4">Create a Trip</h1>
 
             <form onSubmit={handleSubmit} className="space-y-4">
+
                 <input
                     type="text"
                     name="title"
-                    placeholder="Trip Title"
+                    placeholder="Trip Title *"
                     value={formData.title}
                     onChange={handleChange}
                     className="w-full p-2 border rounded"
@@ -92,12 +122,29 @@ const CreateTrip = () => {
                     className="w-full p-2 border rounded"
                 />
 
-                <button
-                    disabled={!formData.title || !formData.destination}
-                    className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
-                >
-                    Create Trip
-                </button>
+                {/* Buttons */}
+                <div className="flex gap-3">
+
+                    <button
+                        disabled={!formData.title || !formData.destination}
+                        className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
+                    >
+                        Create Trip
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={handleSaveDraft}
+                        className="bg-yellow-500 text-white px-4 py-2 rounded"
+                    >
+                        Save for Later
+                    </button>
+
+                    <Link to="/" className="text-blue-500 hover:underline">
+                        Cancel
+                    </Link>
+
+                </div>
             </form>
         </div>
     );
