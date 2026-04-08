@@ -81,13 +81,13 @@ const CreateTrip = () => {
                         Create Trip
                     </button>
 
-                    <button
+                    {/* <button
                         type="button"
                         onClick={handleSaveDraft}
                         className="bg-yellow-500 text-white px-4 py-2 rounded"
                     >
                         Save for Later
-                    </button>
+                    </button> */}
 
                     <Link to="/" className="text-blue-500 hover:underline">
                         Cancel

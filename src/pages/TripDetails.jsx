@@ -25,9 +25,10 @@ const TripDetails = () => {
     if (!trip) return <p className="p-6">Trip not found</p>;
 
     return (
-        <div className="p-6 max-w-2xl mx-auto">
+        <div className="min-h-screen bg-gray-100">
 
-            <div className="flex items-center justify-between mb-4">
+            {/* 🔝 Header */}
+            <div className="bg-white shadow-sm border-b px-6 py-4 flex justify-between items-center">
                 <button
                     onClick={() => navigate("/")}
                     className="text-blue-600 hover:underline"
@@ -35,92 +36,153 @@ const TripDetails = () => {
                     ← Back
                 </button>
 
-                <span className="text-gray-500 text-sm">Trip Details</span>
+                <h1 className="text-lg font-semibold text-gray-700">
+                    Trip Details
+                </h1>
+
+                <div />
             </div>
 
-            {/* Edit / View */}
-            {isEditing ? (
-                <>
-                    <input
-                        value={editData.title}
-                        onChange={(e) =>
-                            setEditData({ ...editData, title: e.target.value })
-                        }
-                        className="p-2 border rounded w-full mb-2"
-                    />
+            {/* 🧾 Trip Info */}
+            <div className="max-w-6xl mx-auto px-6 py-4">
+                <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
 
-                    <input
-                        value={editData.destination}
-                        onChange={(e) =>
-                            setEditData({ ...editData, destination: e.target.value })
-                        }
-                        className="p-2 border rounded w-full mb-2"
-                    />
+                    {isEditing ? (
+                        <div className="space-y-2">
+                            <input
+                                value={editData.title}
+                                onChange={(e) =>
+                                    setEditData({ ...editData, title: e.target.value })
+                                }
+                                className="p-2 border rounded w-full"
+                            />
 
-                    <input
-                        type="date"
-                        value={editData.startDate}
-                        onChange={(e) =>
-                            setEditData({ ...editData, startDate: e.target.value })
-                        }
-                        className="p-2 border rounded w-full mb-2"
-                    />
+                            <input
+                                value={editData.destination}
+                                onChange={(e) =>
+                                    setEditData({ ...editData, destination: e.target.value })
+                                }
+                                className="p-2 border rounded w-full"
+                            />
 
-                    <input
-                        type="date"
-                        value={editData.endDate}
-                        onChange={(e) =>
-                            setEditData({ ...editData, endDate: e.target.value })
-                        }
-                        className="p-2 border rounded w-full mb-4"
-                    />
-                </>
-            ) : (
-                <>
-                    <h1 className="text-2xl font-bold">{trip.title}</h1>
-                    <p className="text-gray-600">{trip.destination}</p>
-                    <MapView lat={coords.lat} lng={coords.lng} />
-                </>
-            )}
+                            <div className="flex gap-2">
+                                <input
+                                    type="date"
+                                    value={editData.startDate}
+                                    onChange={(e) =>
+                                        setEditData({ ...editData, startDate: e.target.value })
+                                    }
+                                    className="p-2 border rounded w-full"
+                                />
 
-            {/* Buttons */}
-            <div className="flex gap-2 my-4">
-                {!isEditing && (
-                    <button onClick={() => setIsEditing(true)} className="bg-yellow-500 text-white px-4 py-2 rounded">
-                        Edit
-                    </button>
-                )}
+                                <input
+                                    type="date"
+                                    value={editData.endDate}
+                                    onChange={(e) =>
+                                        setEditData({ ...editData, endDate: e.target.value })
+                                    }
+                                    className="p-2 border rounded w-full"
+                                />
+                            </div>
+                        </div>
+                    ) : (
+                        <>
+                            <h2 className="text-xl font-bold">{trip.title}</h2>
+                            <p className="text-gray-600">{trip.destination}</p>
+                            <p className="text-sm text-gray-400">
+                                {trip.startDate && trip.endDate ? `${trip.startDate} → ${trip.endDate}` : "Dates not specified"}
+                            </p>
+                        </>
+                    )}
 
-                {isEditing && (
-                    <button onClick={updateTrip} className="bg-green-500 text-white px-4 py-2 rounded">
-                        Save
-                    </button>
-                )}
+                    {/* Buttons */}
+                    <div className="flex gap-3 mt-3">
+                        {!isEditing && (
+                            <button
+                                onClick={() => setIsEditing(true)}
+                                className="bg-yellow-500 text-white px-3 py-1 rounded"
+                            >
+                                Edit
+                            </button>
+                        )}
 
-                <button onClick={() => deleteTrip(navigate)} className="bg-red-500 text-white px-4 py-2 rounded">
-                    Delete
-                </button>
-            </div>
+                        {isEditing && (
+                            <button
+                                onClick={updateTrip}
+                                className="bg-green-500 text-white px-3 py-1 rounded"
+                            >
+                                Save
+                            </button>
+                        )}
 
-            {/* Add Place */}
-            <div className="flex gap-2 mb-4">
-                <input
-                    value={newPlace}
-                    onChange={(e) => setNewPlace(e.target.value)}
-                    className="flex-1 p-2 border rounded"
-                />
-                <button onClick={addPlace} className="bg-blue-500 text-white px-4 rounded">
-                    Add
-                </button>
-            </div>
-
-            {/* Places */}
-            {trip.places.map((place, i) => (
-                <div key={i} className="flex justify-between border p-2 mb-2 rounded">
-                    {place}
-                    <button onClick={() => deletePlace(i)}>❌</button>
+                        <button
+                            onClick={() => deleteTrip(navigate)}
+                            className="bg-red-500 text-white px-3 py-1 rounded"
+                        >
+                            Delete
+                        </button>
+                    </div>
                 </div>
-            ))}
+
+                {/* 🔥 MAIN SPLIT SECTION */}
+                <div className="grid md:grid-cols-2 gap-4">
+
+                    {/* 🗺️ LEFT - MAP */}
+                    <div className="bg-white rounded-xl shadow-sm p-2 h-[500px]">
+                        <MapView lat={coords.lat} lng={coords.lng} />
+                    </div>
+
+                    {/* 📍 RIGHT - PLACES */}
+                    <div className="bg-white rounded-xl shadow-sm p-4 flex flex-col">
+
+                        <h3 className="text-lg font-semibold mb-3">
+                            Places
+                        </h3>
+
+                        {/* Add Place */}
+                        <div className="flex gap-2 mb-3">
+                            <input
+                                value={newPlace}
+                                onChange={(e) => setNewPlace(e.target.value)}
+                                placeholder="Add a place..."
+                                className="flex-1 p-2 border rounded"
+                            />
+                            <button
+                                onClick={addPlace}
+                                className="bg-blue-600 text-white px-3 rounded"
+                            >
+                                Add
+                            </button>
+                        </div>
+
+                        {/* Places List */}
+                        <div className="flex-1 overflow-y-auto space-y-2">
+                            {trip.places.length === 0 ? (
+                                <p className="text-gray-400 text-sm">
+                                    No places added
+                                </p>
+                            ) : (
+                                trip.places.map((place, i) => (
+                                    <div
+                                        key={i}
+                                        className="flex justify-between items-center p-3 bg-gray-50 rounded border"
+                                    >
+                                        <span>{place}</span>
+                                        <button
+                                            onClick={() => deletePlace(i)}
+                                            className="text-red-500"
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
         </div>
     );
 };
