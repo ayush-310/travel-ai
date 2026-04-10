@@ -11,6 +11,7 @@ const TripDetails = () => {
         trip,
         coords,
         newPlace,
+        markers,
         setNewPlace,
         isEditing,
         setIsEditing,
@@ -129,8 +130,11 @@ const TripDetails = () => {
 
                     {/* 🗺️ LEFT - MAP */}
                     <div className="bg-white rounded-xl shadow-sm p-2 h-[500px]">
-                        <MapView lat={coords.lat} lng={coords.lng} />
-                    </div>
+                        <MapView
+                            lat={coords.lat}
+                            lng={coords.lng}
+                            markers={markers}
+                        />                    </div>
 
                     {/* 📍 RIGHT - PLACES */}
                     <div className="bg-white rounded-xl shadow-sm p-4 flex flex-col">

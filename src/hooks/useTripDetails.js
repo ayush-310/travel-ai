@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { getCoordinates } from "../services/geocode";
 
 export const useTripDetails = (id) => {
+
+    const [markers, setMarkers] = useState([]);
     const [trip, setTrip] = useState(null);
     const [coords, setCoords] = useState({
         lat: 28.6139,
@@ -22,6 +24,38 @@ export const useTripDetails = (id) => {
     // Sync edit data
     useEffect(() => {
         if (trip) setEditData(trip);
+    }, [trip]);
+
+    useEffect(() => {
+        const fetchMarkers = async () => {
+            if (!trip?.places || trip.places.length === 0) {
+                setMarkers([]);
+                return;
+            }
+
+            const results = [];
+
+            for (const place of trip.places) {
+                const query = `${place}, ${trip.destination}`;
+                console.log("Fetching:", query);
+
+                const res = await getCoordinates(query);
+                console.log("Result:", res);
+
+                if (res) {
+                    results.push({
+                        name: place,
+                        lat: res.lat,
+                        lng: res.lng,
+                    });
+                }
+            }
+
+            console.log("Final Markers:", results);
+            setMarkers(results);
+        };
+
+        fetchMarkers();
     }, [trip]);
 
     // Fetch coordinates
@@ -97,6 +131,7 @@ export const useTripDetails = (id) => {
         trip,
         coords,
         newPlace,
+        markers,
         setNewPlace,
         isEditing,
         setIsEditing,

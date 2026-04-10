@@ -1,29 +1,49 @@
 import React from "react";
-import { MapContainer, TileLayer, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import L from "leaflet";
+
+// 🔥 FIX marker icons
+delete L.Icon.Default.prototype._getIconUrl;
+
+L.Icon.Default.mergeOptions({
+    iconRetinaUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png",
+    iconUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png",
+    shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
+});
 
 const ChangeView = ({ center }) => {
     const map = useMap();
-    map.setView(center);
+
+    React.useEffect(() => {
+        map.setView(center);
+    }, [center, map]);
+
     return null;
 };
 
-const MapView = ({ lat = 28.6139, lng = 77.2090 }) => {
+const MapView = ({ lat, lng, markers = [] }) => {
     const position = [lat, lng];
 
     return (
-        <div className="h-[400px] w-full rounded overflow-hidden mt-4">
+        <div className="h-[500px] w-full rounded overflow-hidden">
             <MapContainer
+                key={`${lat}-${lng}-${markers.length}`}
                 center={position}
                 zoom={10}
-                scrollWheelZoom={true}
                 className="h-full w-full"
             >
                 <ChangeView center={position} />
 
                 <TileLayer
-                    attribution="&copy; OpenStreetMap contributors"
+                    attribution="&copy; OpenStreetMap"
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
+
+                {markers.map((marker, index) => (
+                    <Marker key={index} position={[marker.lat, marker.lng]}>
+                        <Popup>{marker.name}</Popup>
+                    </Marker>
+                ))}
             </MapContainer>
         </div>
     );
