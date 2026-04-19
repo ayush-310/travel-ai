@@ -2,6 +2,8 @@ import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import MapView from "../components/MapView";
 import { useTripDetails } from "../hooks/useTripDetails";
+import AITripPlanner from "../components/AITripPlanner";
+
 
 const TripDetails = () => {
     const { id } = useParams();
@@ -182,7 +184,7 @@ const TripDetails = () => {
                                 ))
                             )}
                         </div>
-
+                        <AITripPlanner />
                     </div>
                 </div>
 
