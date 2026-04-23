@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { signOut } from "firebase/auth";
+import { auth } from "../services/firebase";
 import MapView from "../components/MapView";
 import TripCard from "../components/TripCard";
 
@@ -17,12 +19,23 @@ const Home = () => {
         setDraft(storedDraft);
     }, []);
 
-    return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200">
+    const handleLogout = async () => {
+        try {
+            await signOut(auth);
+            navigate("/auth");
+        } catch (error) {
+            console.error("Logout error:", error);
+        }
+    };
 
-            {/* 🌟 Hero Header */}
-            <div className="bg-white/70 backdrop-blur-md shadow-sm border-b">
-                <div className="max-w-6xl mx-auto px-6 py-6 flex justify-between items-center">
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300">
+
+            {/* 🌟 Header */}
+            <div className="bg-white/80 backdrop-blur-md border-b shadow-sm">
+                <div className="max-w-6xl mx-auto px-6 py-5 flex justify-between items-center">
+
+                    {/* Left */}
                     <div>
                         <h1 className="text-3xl font-bold text-gray-800">
                             My Trips ✈️
@@ -32,52 +45,72 @@ const Home = () => {
                         </p>
                     </div>
 
-                    <button
-                        onClick={() =>
-                            navigate("/create", { state: { loadDraft: false } })
-                        }
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg shadow-md transition"
-                    >
-                        + Create Trip
-                    </button>
+                    {/* Right Buttons */}
+                    <div className="flex gap-3">
+
+                        <button
+                            onClick={() =>
+                                navigate("/create", { state: { loadDraft: false } })
+                            }
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg shadow-md transition flex items-center gap-1"
+                        >
+                            ➕ Create
+                        </button>
+
+                        <button
+                            onClick={handleLogout}
+                            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg shadow-md transition"
+                        >
+                            Logout
+                        </button>
+
+                    </div>
                 </div>
             </div>
 
-            {/* 📦 Main Content */}
+            {/* 📦 Content */}
             <div className="max-w-6xl mx-auto px-6 py-8">
-                {/* ✨ Trips Section */}
+
+                {/* Empty State */}
                 {trips.length === 0 ? (
                     <div className="bg-white rounded-2xl shadow-md p-10 text-center">
-                        <p className="text-gray-500 text-lg">
-                            No trips yet
+                        <p className="text-gray-600 text-lg font-medium">
+                            No trips yet ✈️
                         </p>
                         <p className="text-gray-400 text-sm mt-2">
                             Start planning your next adventure 🌍
                         </p>
+
+                        <button
+                            onClick={() =>
+                                navigate("/create", { state: { loadDraft: false } })
+                            }
+                            className="mt-4 bg-blue-600 text-white px-5 py-2 rounded-lg"
+                        >
+                            Create Your First Trip
+                        </button>
                     </div>
                 ) : (
                     <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
 
                         {/* Trips */}
                         {trips.map((trip) => (
-
-                            // Planned Trip Card
                             <div
                                 key={trip.id}
-                                className={`bg-white rounded-xl shadow-md p-4 cursor-pointer 
-      transform hover:-translate-y-1 hover:shadow-xl transition 
-      ${!trip.destination || !trip.startDate || !trip.endDate
+                                onClick={() => navigate(`/trip/${trip.id}`)}
+                                className={`bg-white rounded-xl shadow-md p-5 cursor-pointer
+              transform hover:-translate-y-2 hover:shadow-2xl transition duration-300
+              ${!trip.destination || !trip.startDate || !trip.endDate
                                         ? "border-b-4 border-yellow-400"
                                         : "border-b-4 border-green-500"
                                     }`}
-                                onClick={() => navigate(`/trip/${trip.id}`)}
                             >
-                                <h2 className="text-lg font-semibold text-gray-800">
+                                <h2 className="text-lg font-semibold text-gray-800 mb-1">
                                     {trip.title}
                                 </h2>
 
                                 <p className="text-sm text-gray-500">
-                                    {trip.destination || "No destination"}
+                                    📍 {trip.destination || "No destination"}
                                 </p>
 
                                 <p className="text-xs text-gray-400 mt-2">
@@ -88,11 +121,10 @@ const Home = () => {
                             </div>
                         ))}
 
-                        {/* 🟡 Draft Card (LAST) */}
-
-                        {/* // Trip Draft Card */}
+                        {/* 🔴 Draft Card */}
                         {draft && (
-                            <div className="bg-white rounded-xl shadow-md p-4 border-b-4 border-red-500 transform hover:-translate-y-1 hover:shadow-xl transition">
+                            <div className="bg-white rounded-xl shadow-md p-5 border-b-4 border-red-500
+            transform hover:-translate-y-2 hover:shadow-2xl transition duration-300">
 
                                 <h2 className="text-lg font-semibold text-red-500 mb-1">
                                     Draft
@@ -103,10 +135,10 @@ const Home = () => {
                                 </p>
 
                                 <p className="text-sm text-gray-500">
-                                    {draft.destination || "No destination"}
+                                    📍 {draft.destination || "No destination"}
                                 </p>
 
-                                <div className="flex gap-2 mt-3">
+                                <div className="flex gap-2 mt-4">
                                     <button
                                         onClick={() =>
                                             navigate("/create", { state: { loadDraft: true } })
@@ -131,7 +163,6 @@ const Home = () => {
 
                     </div>
                 )}
-
             </div>
         </div>
     );
