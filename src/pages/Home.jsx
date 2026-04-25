@@ -4,6 +4,11 @@ import { signOut } from "firebase/auth";
 import { auth } from "../services/firebase";
 import MapView from "../components/MapView";
 import TripCard from "../components/TripCard";
+import { onAuthStateChanged } from "firebase/auth";
+import { subscribeToTrips } from "../services/firestoreService";
+
+
+
 
 const Home = () => {
     const [trips, setTrips] = useState([]);
@@ -12,10 +17,7 @@ const Home = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const storedTrips = JSON.parse(localStorage.getItem("trips")) || [];
         const storedDraft = JSON.parse(localStorage.getItem("tripDraft"));
-
-        setTrips(storedTrips);
         setDraft(storedDraft);
     }, []);
 
@@ -27,6 +29,26 @@ const Home = () => {
             console.error("Logout error:", error);
         }
     };
+    
+
+    useEffect(() => {
+        let unsubscribeTrips = null;
+
+        const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+            if (user) {
+                unsubscribeTrips = subscribeToTrips(user.uid, (data) => {
+                    setTrips(data); // 🔥 instant update
+                });
+            } else {
+                setTrips([]);
+            }
+        });
+
+        return () => {
+            unsubscribeAuth();
+            if (unsubscribeTrips) unsubscribeTrips();
+        };
+    }, []);
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300">

@@ -20,19 +20,6 @@ const CreateTrip = () => {
         createTrip();
         navigate("/");
     };
-
-    const handleSaveDraft = () => {
-        const res = saveDraft();
-
-        if (!res.success) {
-            alert(res.message);
-            return;
-        }
-
-        alert("Saved for later!");
-        navigate("/");
-    };
-
     return (
         <div className="p-6 max-w-xl mx-auto">
             <h1 className="text-2xl font-bold mb-4">Create a Trip</h1>
@@ -80,14 +67,6 @@ const CreateTrip = () => {
                     >
                         Create Trip
                     </button>
-
-                    {/* <button
-                        type="button"
-                        onClick={handleSaveDraft}
-                        className="bg-yellow-500 text-white px-4 py-2 rounded"
-                    >
-                        Save for Later
-                    </button> */}
 
                     <Link to="/" className="text-blue-500 hover:underline">
                         Cancel

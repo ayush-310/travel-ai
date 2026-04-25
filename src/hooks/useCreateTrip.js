@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+    import { addTripToDB } from "../services/firestoreService";
+    import { auth } from "../services/firebase";
 
 export const useCreateTrip = (locationState) => {
     const [formData, setFormData] = useState({
@@ -40,19 +42,35 @@ export const useCreateTrip = (locationState) => {
     };
 
     // ✅ Create Trip
-    const createTrip = () => {
+    const createTrip = async () => {
+        if (!formData.title || !formData.destination) return;
+
+        const user = auth.currentUser;
+
+        if (!user) {
+            alert("User not logged in");
+            return;
+        }
+
         const newTrip = {
-            id: Date.now().toString(),
-            ...formData,
+            title: formData.title.trim(),
+            destination: formData.destination.trim(),
+            startDate: formData.startDate,
+            endDate: formData.endDate,
             places: [],
-            status: "completed",
         };
 
-        const trips = JSON.parse(localStorage.getItem("trips")) || [];
+        await addTripToDB(newTrip, user.uid);
 
-        localStorage.setItem("trips", JSON.stringify([...trips, newTrip]));
-
+        // clear draft
         localStorage.removeItem("tripDraft");
+
+        setFormData({
+            title: "",
+            destination: "",
+            startDate: "",
+            endDate: "",
+        });
     };
 
     // ✅ Save Draft

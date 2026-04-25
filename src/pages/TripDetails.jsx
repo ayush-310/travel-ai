@@ -3,12 +3,21 @@ import { useParams, useNavigate } from "react-router-dom";
 import MapView from "../components/MapView";
 import { useTripDetails } from "../hooks/useTripDetails";
 import AITripPlanner from "../components/AITripPlanner";
-
+import { deleteTripFromDB } from "../services/firestoreService";
+import { updateTripInDB } from "../services/firestoreService";
 
 const TripDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
 
+    const handleUpdate = async () => {
+        await updateTripInDB(trip.id, editData);
+        setIsEditing(false);
+    };
+    const handleDelete = async () => {
+        await deleteTripFromDB(trip.id);
+        navigate("/");
+    };
     const {
         trip,
         coords,
@@ -108,6 +117,7 @@ const TripDetails = () => {
                                 Edit
                             </button>
                         )}
+                        <button onClick={handleUpdate}>Save</button>
 
                         {isEditing && (
                             <button
