@@ -1,1 +1,1 @@
-bug - draft is removed on creating new trips 
+bug - on refresh cards got removed 

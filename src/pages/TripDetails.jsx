@@ -3,21 +3,11 @@ import { useParams, useNavigate } from "react-router-dom";
 import MapView from "../components/MapView";
 import { useTripDetails } from "../hooks/useTripDetails";
 import AITripPlanner from "../components/AITripPlanner";
-import { deleteTripFromDB } from "../services/firestoreService";
-import { updateTripInDB } from "../services/firestoreService";
 
 const TripDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
 
-    const handleUpdate = async () => {
-        await updateTripInDB(trip.id, editData);
-        setIsEditing(false);
-    };
-    const handleDelete = async () => {
-        await deleteTripFromDB(trip.id);
-        navigate("/");
-    };
     const {
         trip,
         coords,
@@ -102,38 +92,46 @@ const TripDetails = () => {
                             <h2 className="text-xl font-bold">{trip.title}</h2>
                             <p className="text-gray-600">{trip.destination}</p>
                             <p className="text-sm text-gray-400">
-                                {trip.startDate && trip.endDate ? `${trip.startDate} → ${trip.endDate}` : "Dates not specified"}
+                                {trip.startDate && trip.endDate
+                                    ? `${trip.startDate} → ${trip.endDate}`
+                                    : "Dates not specified"}
                             </p>
                         </>
                     )}
 
-                    {/* Buttons */}
+                    {/* ✅ Single set of action buttons — no duplicates */}
                     <div className="flex gap-3 mt-3">
-                        {!isEditing && (
-                            <button
-                                onClick={() => setIsEditing(true)}
-                                className="bg-yellow-500 text-white px-3 py-1 rounded"
-                            >
-                                Edit
-                            </button>
+                        {isEditing ? (
+                            <>
+                                <button
+                                    onClick={updateTrip}
+                                    className="bg-green-500 text-white px-3 py-1 rounded"
+                                >
+                                    Save
+                                </button>
+                                <button
+                                    onClick={() => setIsEditing(false)}
+                                    className="bg-gray-400 text-white px-3 py-1 rounded"
+                                >
+                                    Cancel
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <button
+                                    onClick={() => setIsEditing(true)}
+                                    className="bg-yellow-500 text-white px-3 py-1 rounded"
+                                >
+                                    Edit
+                                </button>
+                                <button
+                                    onClick={() => deleteTrip(navigate)}
+                                    className="bg-red-500 text-white px-3 py-1 rounded"
+                                >
+                                    Delete
+                                </button>
+                            </>
                         )}
-                        <button onClick={handleUpdate}>Save</button>
-
-                        {isEditing && (
-                            <button
-                                onClick={updateTrip}
-                                className="bg-green-500 text-white px-3 py-1 rounded"
-                            >
-                                Save
-                            </button>
-                        )}
-
-                        <button
-                            onClick={() => deleteTrip(navigate)}
-                            className="bg-red-500 text-white px-3 py-1 rounded"
-                        >
-                            Delete
-                        </button>
                     </div>
                 </div>
 
@@ -146,14 +144,13 @@ const TripDetails = () => {
                             lat={coords.lat}
                             lng={coords.lng}
                             markers={markers}
-                        />                    </div>
+                        />
+                    </div>
 
                     {/* 📍 RIGHT - PLACES */}
                     <div className="bg-white rounded-xl shadow-sm p-4 flex flex-col">
 
-                        <h3 className="text-lg font-semibold mb-3">
-                            Places
-                        </h3>
+                        <h3 className="text-lg font-semibold mb-3">Places</h3>
 
                         {/* Add Place */}
                         <div className="flex gap-2 mb-3">
@@ -162,6 +159,7 @@ const TripDetails = () => {
                                 onChange={(e) => setNewPlace(e.target.value)}
                                 placeholder="Add a place..."
                                 className="flex-1 p-2 border rounded"
+                                onKeyDown={(e) => e.key === "Enter" && addPlace()}
                             />
                             <button
                                 onClick={addPlace}
@@ -173,10 +171,8 @@ const TripDetails = () => {
 
                         {/* Places List */}
                         <div className="flex-1 overflow-y-auto space-y-2">
-                            {trip.places.length === 0 ? (
-                                <p className="text-gray-400 text-sm">
-                                    No places added
-                                </p>
+                            {!trip.places || trip.places.length === 0 ? (
+                                <p className="text-gray-400 text-sm">No places added</p>
                             ) : (
                                 trip.places.map((place, i) => (
                                     <div
@@ -194,10 +190,10 @@ const TripDetails = () => {
                                 ))
                             )}
                         </div>
+
                         <AITripPlanner />
                     </div>
                 </div>
-
             </div>
         </div>
     );

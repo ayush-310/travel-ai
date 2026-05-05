@@ -1,31 +1,44 @@
 import { useEffect, useState } from "react";
 import { getCoordinates } from "../services/geocode";
+import { db } from "../services/firebase";
+import { doc, onSnapshot } from "firebase/firestore";
+import { updateTripInDB, deleteTripFromDB } from "../services/firestoreService";
 
 export const useTripDetails = (id) => {
-
     const [markers, setMarkers] = useState([]);
     const [trip, setTrip] = useState(null);
     const [coords, setCoords] = useState({
         lat: 28.6139,
-        lng: 77.2090,
+        lng: 77.209,
     });
 
     const [newPlace, setNewPlace] = useState("");
     const [isEditing, setIsEditing] = useState(false);
     const [editData, setEditData] = useState(null);
 
-    // Load trip
+    // ✅ Load trip from Firestore in real-time
     useEffect(() => {
-        const trips = JSON.parse(localStorage.getItem("trips")) || [];
-        const foundTrip = trips.find((t) => t.id === id);
-        setTrip(foundTrip);
+        if (!id) return;
+
+        const tripRef = doc(db, "trips", id);
+        const unsubscribe = onSnapshot(tripRef, (docSnap) => {
+            if (docSnap.exists()) {
+                const data = { id: docSnap.id, ...docSnap.data() };
+                setTrip(data);
+            } else {
+                setTrip(null);
+            }
+        });
+
+        return () => unsubscribe();
     }, [id]);
 
-    // Sync edit data
+    // Sync edit data when trip loads
     useEffect(() => {
-        if (trip) setEditData(trip);
+        if (trip) setEditData({ ...trip });
     }, [trip]);
 
+    // Fetch map markers for places
     useEffect(() => {
         const fetchMarkers = async () => {
             if (!trip?.places || trip.places.length === 0) {
@@ -34,31 +47,20 @@ export const useTripDetails = (id) => {
             }
 
             const results = [];
-
             for (const place of trip.places) {
                 const query = `${place}, ${trip.destination}`;
-                console.log("Fetching:", query);
-
                 const res = await getCoordinates(query);
-                console.log("Result:", res);
-
                 if (res) {
-                    results.push({
-                        name: place,
-                        lat: res.lat,
-                        lng: res.lng,
-                    });
+                    results.push({ name: place, lat: res.lat, lng: res.lng });
                 }
             }
-
-            console.log("Final Markers:", results);
             setMarkers(results);
         };
 
         fetchMarkers();
     }, [trip]);
 
-    // Fetch coordinates
+    // Fetch destination coordinates
     useEffect(() => {
         const fetchCoords = async () => {
             if (trip?.destination) {
@@ -70,60 +72,33 @@ export const useTripDetails = (id) => {
         fetchCoords();
     }, [trip]);
 
-    // Add place
-    const addPlace = () => {
-        if (!newPlace.trim()) return;
+    // ✅ Add place — updates Firestore
+    const addPlace = async () => {
+        if (!newPlace.trim() || !trip) return;
 
-        const trips = JSON.parse(localStorage.getItem("trips")) || [];
-
-        const updatedTrips = trips.map((t) =>
-            t.id === id
-                ? { ...t, places: [...t.places, newPlace.trim()] }
-                : t
-        );
-
-        localStorage.setItem("trips", JSON.stringify(updatedTrips));
-        setTrip(updatedTrips.find((t) => t.id === id));
+        const updatedPlaces = [...(trip.places || []), newPlace.trim()];
+        await updateTripInDB(id, { places: updatedPlaces });
         setNewPlace("");
     };
 
-    // Delete place
-    const deletePlace = (index) => {
-        const trips = JSON.parse(localStorage.getItem("trips")) || [];
+    // ✅ Delete place — updates Firestore
+    const deletePlace = async (index) => {
+        if (!trip) return;
 
-        const updatedTrips = trips.map((t) => {
-            if (t.id === id) {
-                return {
-                    ...t,
-                    places: t.places.filter((_, i) => i !== index),
-                };
-            }
-            return t;
-        });
-
-        localStorage.setItem("trips", JSON.stringify(updatedTrips));
-        setTrip(updatedTrips.find((t) => t.id === id));
+        const updatedPlaces = trip.places.filter((_, i) => i !== index);
+        await updateTripInDB(id, { places: updatedPlaces });
     };
 
-    // Delete trip
-    const deleteTrip = (navigate) => {
-        const trips = JSON.parse(localStorage.getItem("trips")) || [];
-        const updated = trips.filter((t) => t.id !== id);
-
-        localStorage.setItem("trips", JSON.stringify(updated));
+    // ✅ Delete trip — removes from Firestore
+    const deleteTrip = async (navigate) => {
+        await deleteTripFromDB(id);
         navigate("/");
     };
 
-    // Update trip
-    const updateTrip = () => {
-        const trips = JSON.parse(localStorage.getItem("trips")) || [];
-
-        const updatedTrips = trips.map((t) =>
-            t.id === id ? editData : t
-        );
-
-        localStorage.setItem("trips", JSON.stringify(updatedTrips));
-        setTrip(editData);
+    // ✅ Update trip — saves to Firestore
+    const updateTrip = async () => {
+        if (!editData) return;
+        await updateTripInDB(id, editData);
         setIsEditing(false);
     };
 
